@@ -6,19 +6,41 @@ function RegisterPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
+  const [avatars, setAvatars] = useState({});
 
   const { register } = useAuth();
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    const data = {
-      username,
-      password,
-      firstName,
-      lastName,
-    };
-    register(data);
+
+    const formData = new FormData();
+
+    formData.append("username", username);
+    formData.append("password", password);
+    formData.append("firstname", firstName);
+    formData.append("lastname", lastName);
+
+    for (let avatarKey in avatars) {
+      formData.append("avatar", avatars[avatarKey]);
+    }
+
+    register(formData);
   };
+
+  const handleFileChange = (event) => {
+    const uniqueId = Date.now();
+    console.log(event.target.files)
+    setAvatars({
+      ...avatars,
+      [uniqueId]: event.target.files[0],
+    });
+  };
+
+  const handleRemoveImage = (event, avatarKey) => {
+    event.preventDefault();
+    delete avatars[avatarKey];
+    setAvatars({...avatars})
+  }
 
   return (
     <div className="register-form-container">
@@ -88,14 +110,34 @@ function RegisterPage() {
           <label>
             Avatar
             <input
-              id="avatar"
+              id="upload"
               name="avatar"
               type="file"
-              placeholder="Enter last name here"
+              hidden
               multiple
-              onChange={(event) => {}}
+              onChange={handleFileChange}
             />
           </label>
+          <div>
+            {Object.keys(avatars).map((avatarKey) => {
+              const file = avatars[avatarKey];
+              return (
+                <div key={avatarKey}>
+                  <img
+                    className=""
+                    src={URL.createObjectURL(file)}
+                    alt={file.name}
+                  />
+                  <button
+                    className=""
+                    onClick={(event) => handleRemoveImage(event, avatarKey)}
+                    >
+                      X
+                    </button>
+                </div>
+              )
+            })}
+          </div>
         </div>
         <div className="form-actions">
           <button type="submit">Submit</button>
